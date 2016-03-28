@@ -109,6 +109,82 @@ gl_FragColor = vec4(color, 1.);\n\
   GL.enableVertexAttribArray(_position);
 
   GL.useProgram(SHADER_PROGRAM);
+  /*======================= THE CIRCLE =========================== */
+
+  var circle_vertex = [];
+    circle_vertex.push(0);
+    circle_vertex.push(0);
+    circle_vertex.push(0);
+    circle_vertex.push(1);
+    circle_vertex.push(1);
+    circle_vertex.push(1);
+
+  for ( var i = 0; i < 360; i++){
+    circle_vertex.push(Math.cos(i));
+    circle_vertex.push(Math.sin(i));
+    circle_vertex.push(0);
+    circle_vertex.push(1);
+    circle_vertex.push(1);
+    circle_vertex.push(1);
+  }
+  var CIRCLE_VERTEX= GL.createBuffer ();
+  GL.bindBuffer(GL.ARRAY_BUFFER, CIRCLE_VERTEX);
+  GL.bufferData(GL.ARRAY_BUFFER,
+                new Float32Array(circle_vertex),
+    GL.STATIC_DRAW);
+
+  var circle_faces = [];
+
+  for ( var i=0; i<360; i++){
+    circle_faces.push(0);
+    circle_faces.push(i);
+    circle_faces.push((i+1)%360);
+  }
+
+  var CIRLCE_FACES= GL.createBuffer ();
+  GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, CIRLCE_FACES);
+  GL.bufferData(GL.ELEMENT_ARRAY_BUFFER,
+                new Uint16Array(circle_faces),
+    GL.STATIC_DRAW);
+
+  /*======================= THE CIRCLE =========================== */
+
+  var circle_vertex = [];
+    circle_vertex.push(0);
+    circle_vertex.push(0);
+    circle_vertex.push(0);
+    circle_vertex.push(1);
+    circle_vertex.push(1);
+    circle_vertex.push(1);
+
+  for ( var i = 0; i < 360; i++){
+    circle_vertex.push(Math.cos(i));
+    circle_vertex.push(Math.sin(i));
+    circle_vertex.push(0);
+    circle_vertex.push(1);
+    circle_vertex.push(1);
+    circle_vertex.push(1);
+  }
+  var CIRCLE_VERTEX= GL.createBuffer ();
+  GL.bindBuffer(GL.ARRAY_BUFFER, CIRCLE_VERTEX);
+  GL.bufferData(GL.ARRAY_BUFFER,
+                new Float32Array(circle_vertex),
+    GL.STATIC_DRAW);
+
+  var circle_faces = [];
+
+  for ( var i=0; i<360; i++){
+    circle_faces.push(0);
+    circle_faces.push(i);
+    circle_faces.push((i+1)%360);
+  }
+
+  var CIRLCE_FACES= GL.createBuffer ();
+  GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, CIRLCE_FACES);
+  GL.bufferData(GL.ELEMENT_ARRAY_BUFFER,
+                new Uint16Array(circle_faces),
+    GL.STATIC_DRAW);
+
 
   /*======================== THE RECTANGLE ============================ */
   var rectangle_vertex=[
@@ -194,6 +270,7 @@ gl_FragColor = vec4(color, 1.);\n\
   var MOVEMATRIX2=LIBS.get_I4();
   var MOVEMATRIX3=LIBS.get_I4();
   var MOVEMATRIX4=LIBS.get_I4();
+  var CIRCLEMATRIX=LIBS.get_I4();
   var MOVEMATRIX_TETRA=LIBS.get_I4();
   var VIEWMATRIX=LIBS.get_I4();
 
@@ -216,25 +293,30 @@ gl_FragColor = vec4(color, 1.);\n\
     }
     LIBS.set_I4(MOVEMATRIX_TETRA);
     LIBS.set_I4(MOVEMATRIX);
+    LIBS.set_I4(CIRCLEMATRIX);
     LIBS.set_I4(MOVEMATRIX2);
     LIBS.set_I4(MOVEMATRIX3);
     LIBS.set_I4(MOVEMATRIX4);
 
     LIBS.scaleX(MOVEMATRIX, 1.45);
-    LIBS.scaleY(MOVEMATRIX, 0.075);
+    LIBS.scaleY(MOVEMATRIX, 0.1);
     LIBS.translateY(MOVEMATRIX,-1.6);
 
     LIBS.scaleY(MOVEMATRIX2, 1.45);
-    LIBS.scaleX(MOVEMATRIX2, 0.075);
+    LIBS.scaleX(MOVEMATRIX2, 0.1);
     LIBS.translateX(MOVEMATRIX2,1.6);
 
     LIBS.scaleY(MOVEMATRIX3, 1.45);
-    LIBS.scaleX(MOVEMATRIX3, 0.075);
+    LIBS.scaleX(MOVEMATRIX3, 0.1);
     LIBS.translateX(MOVEMATRIX3,-1.6);
 
     LIBS.scaleX(MOVEMATRIX4, 1.45);
-    LIBS.scaleY(MOVEMATRIX4, 0.075);
+    LIBS.scaleY(MOVEMATRIX4, 0.1);
     LIBS.translateY(MOVEMATRIX4,1.6);
+
+    LIBS.scaleX(CIRCLEMATRIX, 0.1);
+    LIBS.scaleY(CIRCLEMATRIX, 0.1);
+    LIBS.translateY(CIRCLEMATRIX, -1.6);
     
 
     LIBS.scaleX(MOVEMATRIX_TETRA, 2);
@@ -267,7 +349,6 @@ gl_FragColor = vec4(color, 1.);\n\
     GL.uniformMatrix4fv(_Mmatrix, false, MOVEMATRIX);
     GL.uniform1f(_greyscality, 1);
 
-
     GL.uniformMatrix4fv(_Mmatrix, false, MOVEMATRIX_TETRA);
     GL.bindBuffer(GL.ARRAY_BUFFER, RECTANGLE_VERTEX);
     GL.vertexAttribPointer(_position, 3, GL.FLOAT, false,4*(3+3),0) ;
@@ -276,6 +357,8 @@ gl_FragColor = vec4(color, 1.);\n\
 
     GL.uniform1f(_greyscality, 1);
     GL.drawElements(GL.TRIANGLES, 2*3, GL.UNSIGNED_SHORT, 0);
+
+
 
     /*==================== DRAW LINES ==========================*/
     GL.uniformMatrix4fv(_Mmatrix, false, MOVEMATRIX);
@@ -317,6 +400,15 @@ gl_FragColor = vec4(color, 1.);\n\
 
 
 
+
+    GL.uniformMatrix4fv(_Mmatrix, false, CIRCLEMATRIX);
+    GL.bindBuffer(GL.ARRAY_BUFFER, CIRCLE_VERTEX);
+    GL.vertexAttribPointer(_position, 3, GL.FLOAT, false,4*(3+3),0) ;
+    GL.vertexAttribPointer(_color, 3, GL.FLOAT, false,4*(3+3),3*4) ;
+    GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, CIRLCE_FACES);
+
+    GL.uniform1f(_greyscality, 1);
+    GL.drawElements(GL.TRIANGLES, 360*3, GL.UNSIGNED_SHORT, 0);
 
 
    //GL.uniform1f(_greyscality, 0);
