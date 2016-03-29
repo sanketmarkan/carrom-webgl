@@ -1,5 +1,6 @@
 var positionx = new Array(10);
 var positiony = new Array(10);
+var good = new Array(35);
 var cspeed = new Array(10);
 var done = new Array(10);
 var cinmotion = new Array(10);
@@ -9,6 +10,8 @@ var strikerx = 0,strikery=-1.6;
 var mousex = 0,mousey=0;
 var iTHETA;
 
+for ( var i = 0 ;i < 32; i++)
+  good[i]=true;
 for ( var i = 0 ;i < 9; i++){
   cspeed[i]=0;
   done[i] = false;
@@ -408,6 +411,9 @@ gl_FragColor = vec4(color, 1.);\n\
   var VIEWMATRIX=LIBS.get_I4();
   var LINEMATRIX=LIBS.get_I4();
   var COINMATRIX = new Array(10);
+  var gook = new Array(32);
+  for ( var i = 0;i < 32; i++)
+    gook[i] = LIBS.get_I4();
   for ( var i = 0;i < 9; i++)
     COINMATRIX[i] = LIBS.get_I4();
 
@@ -428,6 +434,37 @@ gl_FragColor = vec4(color, 1.);\n\
 
   var time_old=0;
   var animate=function(time) {
+    var RECTANGLE_VERTEX2 = new Array(35);
+    var RECTANGLE_FACES2 = new Array(35);
+    for (var i= 0 ; i< 32;i++){
+      var r = 0,g=0;
+      if(good[i]){
+        r=0.19607843137254902;
+        g=0.803921568627451;
+      }
+    var rectangle_vertex=[
+    -1,-1,0, r,g,r,
+    1,-1,0, r,g,r,
+    1,1,0,  r,g,r,
+    -1,1,0, r,g,r
+  ]
+  RECTANGLE_VERTEX2[i]= GL.createBuffer ();
+  GL.bindBuffer(GL.ARRAY_BUFFER, RECTANGLE_VERTEX2[i]);
+  GL.bufferData(GL.ARRAY_BUFFER,
+                new Float32Array(rectangle_vertex),
+    GL.STATIC_DRAW);
+
+  var rectangle_faces = [
+    0,1,2,
+    0,2,3
+  ];
+  RECTANGLE_FACES2[i]= GL.createBuffer ();
+  GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, RECTANGLE_FACES2[i]);
+  GL.bufferData(GL.ELEMENT_ARRAY_BUFFER,
+                new Uint16Array(rectangle_faces),
+    GL.STATIC_DRAW);
+}
+
      /*======================== FOLLOW LINE ==========================*/
   
   var line2_vertex=[
@@ -564,6 +601,15 @@ gl_FragColor = vec4(color, 1.);\n\
     LIBS.set_I4(MOVEMATRIX2);
     LIBS.set_I4(MOVEMATRIX3);
     LIBS.set_I4(MOVEMATRIX4);
+
+    for ( var i = 0; i < 32; i++){
+      LIBS.set_I4(gook[i]);
+      LIBS.scaleX(gook[i],0.1);
+      LIBS.scaleY(gook[i],0.0625);
+      LIBS.translateX(gook[i],2.5);
+      LIBS.translateY(gook[i],2.5);
+    }
+
 
     for ( var i = 0; i < 9; i++){
       LIBS.set_I4(COINMATRIX[i]);
