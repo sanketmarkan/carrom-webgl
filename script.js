@@ -1,10 +1,18 @@
 var positionx = new Array(10);
 var positiony = new Array(10);
+var cspeed = new Array(10);
+var cinmotion = new Array(10);
+var ciTHETA = new Array(10);
 var inmotion = false,power = 0.75;
 var strikerx = 0,strikery=-1.6;
 var mousex = 0,mousey=0;
 var iTHETA;
 
+for ( var i = 0 ;i < 9; i++){
+  cspeed[i]=0;
+  cinmotion[i]=false;
+  ciTHETA[i] =0;
+}
 for ( var i = 0 ;i < 4; i++){
   positiony[i]=0.3*Math.cos(i*LIBS.degToRad(90));
   positionx[i]=0.3*Math.sin(i*LIBS.degToRad(90));
@@ -387,6 +395,54 @@ gl_FragColor = vec4(color, 1.);\n\
     }
   }
 
+  for ( var i = 0; i< 9 ;i++)
+    if(cinmotion[i]){
+      cspeed[i] -= 0.01;
+      positionx[i] += (cspeed[i] * Math.cos(ciTHETA[i]))/10;
+      positiony[i] += (cspeed[i] * Math.sin(ciTHETA[i]))/10;
+      if(speed <= 0){
+        cspeed[i] = 0;
+        cinmotion[i] = false;
+        ciTHETA[i] = 0;
+      }
+    }
+
+  for ( var i = 0; i < 9 ;i++){
+    for ( var j = i+1;j<9;j++){
+      if ( Math.sqrt(Math.pow(positionx[i] - positionx[j],2)+Math.pow(positiony[i]- positiony[j],2)) < 0.15){
+        var linjoinangle = Math.atan2(positiony[i]-positiony[j],positionx[i] - positionx[j]);
+        var sx,sy,cx,cy;
+        cx = cspeed[i] * Math.cos(linjoinangle - ciTHETA[i] );
+        cy = cspeed[i] * Math.sin(linjoinangle - ciTHETA[i] );
+        sx = cspeed[j] * Math.cos(linjoinangle - ciTHETA[j] );
+        sy = cspeed[j] * Math.sin(linjoinangle - ciTHETA[j] );
+        console.log(cx,cy,sx,sy);
+        ciTHETA[j] = Math.atan2(-1*sy*Math.cos(linjoinangle)+cx*Math.sin(linjoinangle),cx*Math.cos(linjoinangle)+sy*Math.sin(linjoinangle));
+        ciTHETA[i] = Math.atan2(-1*cy*Math.cos(linjoinangle)+sx*Math.sin(linjoinangle),sx*Math.cos(linjoinangle)+cy*Math.sin(linjoinangle));
+        cspeed[j] = Math.sqrt(cx*cx+sy*sy);
+        cspeed[i] = Math.sqrt(sx*sx+cy*cy);
+        cinmotion[i] = true;
+        cinmotion[j] = true;
+      }
+    }
+  }
+
+  for ( var i = 0; i< 9 ;i++){
+    if ( Math.sqrt(Math.pow(positionx[i] - strikerx,2)+Math.pow(positiony[i]-strikery,2)) < 0.2){
+      var linjoinangle = Math.atan2(positiony[i]-strikery,positionx[i] - strikerx);
+      var sx,sy,cx,cy;
+      cx = cspeed[i] * Math.cos(linjoinangle - ciTHETA[i] );
+      cy = cspeed[i] * Math.sin(linjoinangle - ciTHETA[i] );
+      sx = speed * Math.cos(linjoinangle - iTHETA );
+      sy = speed * Math.sin(linjoinangle - iTHETA );
+      iTHETA = Math.atan2(-1*sy*Math.cos(linjoinangle)+cx*Math.sin(linjoinangle),cx*Math.cos(linjoinangle)+sy*Math.sin(linjoinangle));
+      ciTHETA[i] = Math.atan2(-1*cy*Math.cos(linjoinangle)+sx*Math.sin(linjoinangle),sx*Math.cos(linjoinangle)+cy*Math.sin(linjoinangle));
+      speed = Math.sqrt(cx*cx+sy*sy);
+      cspeed[i] = Math.sqrt(sx*sx+cy*cy);
+      cinmotion[i] = true;
+    }
+  }
+
 
     var dt=time-time_old;
     if (!drag) {
@@ -438,27 +494,9 @@ gl_FragColor = vec4(color, 1.);\n\
     //LIBS.translateY(LINEMATRIX, power);
     //console.log(THETA*180/Math.PI,THETA);
     
-
     LIBS.scaleX(MOVEMATRIX_TETRA, 2);
     LIBS.scaleY(MOVEMATRIX_TETRA, 2);
-    //LIBS.rotateZ(MOVEMATRIX_TETRA, Math.cos(time)*dt*0.0022);
-    //LIBS.rotateY(MOVEMATRIX_TETRA, dt*-0.0034);
-
-    /*LIBS.set_I4(MOVEMATRIX2);
-    var radius=2; //half distance between the cube centers
-    var pos_x=radius*Math.cos(PHI)*Math.cos(THETA);
-    var pos_y=-radius*Math.sin(PHI);
-    var pos_z=-radius*Math.cos(PHI)*Math.sin(THETA);
-
-    LIBS.set_position(MOVEMATRIX, pos_x, pos_y, pos_z);
-    LIBS.set_position(MOVEMATRIX2, -pos_x, -pos_y, -pos_z);
-
-    LIBS.rotateZ(MOVEMATRIX, -PHI);
-    LIBS.rotateZ(MOVEMATRIX2, -PHI);
-
-    LIBS.rotateY(MOVEMATRIX, THETA);
-    LIBS.rotateY(MOVEMATRIX2, THETA);
-    */
+    
 
     time_old=time;
 
