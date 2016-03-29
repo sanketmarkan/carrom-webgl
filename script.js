@@ -1,5 +1,9 @@
 var positionx = new Array(10);
 var positiony = new Array(10);
+var inmotion = false,power = 0.75;
+var strikerx = 0,strikery=-1.6;
+var mousex = 0,mousey=0;
+var iTHETA;
 
 for ( var i = 0 ;i < 4; i++){
   positiony[i]=0.3*Math.cos(i*LIBS.degToRad(90));
@@ -28,10 +32,18 @@ var main=function() {
 
   var dX=0, dY=0;
   var mouseDown=function(e) {
-    drag=true;
-    old_x=e.pageX, old_y=e.pageY;
+    if (inmotion) return;
+    inmotion = true;
+    speed = power;
+    dX=-4.3+8.6/CANVAS.width*e.pageX;
+    dY=-2+4/CANVAS.height*e.pageY;
+    dY *= -1;
+    mousex = dX;
+    mousey = dY;
+    var x = strikerx, y = strikery;
+    THETA = Math.atan2 ( dY - y, dX - x);
+    iTHETA = THETA;
     e.preventDefault();
-    return false;
   };
 
   var mouseUp=function(e){
@@ -39,12 +51,13 @@ var main=function() {
   };
 
   var mouseMove=function(e) {
-    if (!drag) return false;
-    dX=(e.pageX-old_x)*2*Math.PI/CANVAS.width,
-      dY=(e.pageY-old_y)*2*Math.PI/CANVAS.height;
-    THETA+=dX;
-    PHI+=dY;
-    old_x=e.pageX, old_y=e.pageY;
+    dX=-4.3+8.6/CANVAS.width*e.pageX;
+    dY=-2+4/CANVAS.height*e.pageY;
+    dY *= -1;
+    mousex = dX;
+    mousey = dY;
+    var x = strikerx, y = strikery;
+    THETA = Math.atan2 ( dY - y, dX - x);
     e.preventDefault();
   };
 
@@ -251,6 +264,7 @@ gl_FragColor = vec4(color, 1.);\n\
                 new Uint16Array(rectangle_faces),
     GL.STATIC_DRAW);
 
+
   /*========================= THE BASE LINE ===========================*/
   var line_vertex=[
     -1,-1,0, 0,0,0,
@@ -315,9 +329,15 @@ gl_FragColor = vec4(color, 1.);\n\
   var CIRCLEMATRIX=LIBS.get_I4();
   var MOVEMATRIX_TETRA=LIBS.get_I4();
   var VIEWMATRIX=LIBS.get_I4();
+  var LINEMATRIX=LIBS.get_I4();
   var COINMATRIX = new Array(10);
   for ( var i = 0;i < 9; i++)
     COINMATRIX[i] = LIBS.get_I4();
+
+
+  //var dX=(e.pageX)*2*Math.PI/CANVAS.width,
+ // var dY=(e.pageY)*2*Math.PI/CANVAS.height;
+  //console.log(e.pageY);
 
   LIBS.translateZ(VIEWMATRIX, -6);
   var THETA=0,
@@ -331,6 +351,43 @@ gl_FragColor = vec4(color, 1.);\n\
 
   var time_old=0;
   var animate=function(time) {
+     /*======================== FOLLOW LINE ==========================*/
+  
+  var line2_vertex=[
+    strikerx-0.01,strikery,0, 0.678431372549,1,0.18431372549,
+    strikerx+0.01,strikery,0, 0.678431372549,1,0.18431372549,
+    mousex-0.01,mousey,0,  0.678431372549,1,0.18431372549,
+    mousex+0.01,mousey,0, 0.678431372549,1,0.18431372549   
+  ]
+  var LINE2_VERTEX= GL.createBuffer ();
+  GL.bindBuffer(GL.ARRAY_BUFFER, LINE2_VERTEX);
+  GL.bufferData(GL.ARRAY_BUFFER,
+                new Float32Array(line2_vertex),
+    GL.STATIC_DRAW);
+
+  var line2_faces = [
+    0,1,2,
+    1,2,3
+  ];
+  var LINE2_FACES= GL.createBuffer ();
+  GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, LINE2_FACES);
+  GL.bufferData(GL.ELEMENT_ARRAY_BUFFER,
+                new Uint16Array(line2_faces),
+    GL.STATIC_DRAW);
+
+  if ( inmotion ){
+    speed -= 0.01;
+    strikerx += (speed * Math.cos(iTHETA))/10;
+    strikery += (speed * Math.sin(iTHETA))/10;
+    if(speed <= 0){
+      speed = 0;
+      inmotion = false;
+      strikery = -1.6;
+      strikerx = 0;
+    }
+  }
+
+
     var dt=time-time_old;
     if (!drag) {
       dX*=AMORTIZATION, dY*=AMORTIZATION;
@@ -338,6 +395,7 @@ gl_FragColor = vec4(color, 1.);\n\
     }
     LIBS.set_I4(MOVEMATRIX_TETRA);
     LIBS.set_I4(MOVEMATRIX);
+    LIBS.set_I4(LINEMATRIX);
     LIBS.set_I4(CIRCLEMATRIX);
     LIBS.set_I4(MOVEMATRIX2);
     LIBS.set_I4(MOVEMATRIX3);
@@ -369,7 +427,16 @@ gl_FragColor = vec4(color, 1.);\n\
 
     LIBS.scaleX(CIRCLEMATRIX, 0.1);
     LIBS.scaleY(CIRCLEMATRIX, 0.1);
-    LIBS.translateY(CIRCLEMATRIX, -1.6);
+    LIBS.translateX(CIRCLEMATRIX, strikerx);
+    LIBS.translateY(CIRCLEMATRIX, strikery);
+
+    //LIBS.scaleX(LINEMATRIX, 0.01);
+    //LIBS.scaleY(LINEMATRIX, power);
+ //   LIBS.translateX(LINEMATRIX, strikerx);
+   // LIBS.translateY(LINEMATRIX, strikery+power);
+    //LIBS.rotateZ(LINEMATRIX, THETA );
+    //LIBS.translateY(LINEMATRIX, power);
+    //console.log(THETA*180/Math.PI,THETA);
     
 
     LIBS.scaleX(MOVEMATRIX_TETRA, 2);
@@ -452,6 +519,7 @@ gl_FragColor = vec4(color, 1.);\n\
     GL.drawElements(GL.TRIANGLES, 2*3, GL.UNSIGNED_SHORT, 0);
 
 
+  
     /*=========================== DRAW STRIKER =======================*/
 
     GL.uniformMatrix4fv(_Mmatrix, false, CIRCLEMATRIX);
@@ -475,7 +543,16 @@ gl_FragColor = vec4(color, 1.);\n\
       GL.uniform1f(_greyscality, 1);
       GL.drawElements(GL.TRIANGLES, 360*3, GL.UNSIGNED_SHORT, 0);
     }
+    if ( !inmotion ){
+    GL.uniformMatrix4fv(_Mmatrix, false, LINEMATRIX);
+    GL.bindBuffer(GL.ARRAY_BUFFER, LINE2_VERTEX);
+    GL.vertexAttribPointer(_position, 3, GL.FLOAT, false,4*(3+3),0) ;
+    GL.vertexAttribPointer(_color, 3, GL.FLOAT, false,4*(3+3),3*4) ;
+    GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, LINE2_FACES);
 
+    GL.uniform1f(_greyscality, 1);
+    GL.drawElements(GL.TRIANGLES, 2*3, GL.UNSIGNED_SHORT, 0);
+  }
     GL.flush();
 
     window.requestAnimationFrame(animate);
