@@ -3,6 +3,7 @@ var positiony = new Array(10);
 var good = new Array(35);
 var cspeed = new Array(10);
 var done = new Array(10);
+var cp = 7;
 var cinmotion = new Array(10);
 var ciTHETA = new Array(10);
 var inmotion = false,power = 0.75;
@@ -10,7 +11,7 @@ var strikerx = 0,strikery=-1.6;
 var mousex = 0,mousey=0;
 var iTHETA;
 
-for ( var i = 0 ;i < 32; i++)
+for ( var i = 0 ;i < 8; i++)
   good[i]=true;
 for ( var i = 0 ;i < 9; i++){
   cspeed[i]=0;
@@ -90,10 +91,16 @@ var main=function() {
     }
     if(e.keyCode==40){
       power -= 0.05
+      good[cp] = false;
+      cp --;
+      cp = Math.max(0,cp);
       power = Math.max(0.4,power);
     }
     if(e.keyCode==38){
       power +=0.05;
+      cp++;
+      cp = Math.min(31,cp);
+      good[cp] = true;
       power = Math.min(2,power);
     }
   }
@@ -607,7 +614,7 @@ gl_FragColor = vec4(color, 1.);\n\
       LIBS.scaleX(gook[i],0.1);
       LIBS.scaleY(gook[i],0.0625);
       LIBS.translateX(gook[i],2.5);
-      LIBS.translateY(gook[i],2.5);
+      LIBS.translateY(gook[i],0.0625*i);
     }
 
 
@@ -754,6 +761,17 @@ gl_FragColor = vec4(color, 1.);\n\
     GL.vertexAttribPointer(_position, 3, GL.FLOAT, false,4*(3+3),0) ;
     GL.vertexAttribPointer(_color, 3, GL.FLOAT, false,4*(3+3),3*4) ;
     GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, LINE2_FACES);
+
+    GL.uniform1f(_greyscality, 1);
+    GL.drawElements(GL.TRIANGLES, 2*3, GL.UNSIGNED_SHORT, 0);
+  }
+
+  for (var i =0 ;i<32;i++){
+    GL.uniformMatrix4fv(_Mmatrix, false, gook[i]);
+    GL.bindBuffer(GL.ARRAY_BUFFER, RECTANGLE_VERTEX2[i]);
+    GL.vertexAttribPointer(_position, 3, GL.FLOAT, false,4*(3+3),0) ;
+    GL.vertexAttribPointer(_color, 3, GL.FLOAT, false,4*(3+3),3*4) ;
+    GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, RECTANGLE_FACES2[i]);
 
     GL.uniform1f(_greyscality, 1);
     GL.drawElements(GL.TRIANGLES, 2*3, GL.UNSIGNED_SHORT, 0);
