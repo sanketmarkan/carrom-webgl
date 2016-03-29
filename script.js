@@ -1,3 +1,18 @@
+var positionx = new Array(10);
+var positiony = new Array(10);
+
+for ( var i = 0 ;i < 4; i++){
+  positiony[i]=0.3*Math.cos(i*LIBS.degToRad(90));
+  positionx[i]=0.3*Math.sin(i*LIBS.degToRad(90));
+}
+
+for ( var i = 4 ;i < 8; i++){
+  positiony[i]=0.3*Math.cos(LIBS.degToRad(i*90+45));
+  positionx[i]=0.3*Math.sin(LIBS.degToRad(i*90+45));
+}
+positiony[8]=0;
+positionx[8]=0;
+ 
 var main=function() {
   var CANVAS=document.getElementById("your_canvas");
   CANVAS.width=window.innerWidth;
@@ -115,17 +130,17 @@ gl_FragColor = vec4(color, 1.);\n\
     circle_vertex.push(0);
     circle_vertex.push(0);
     circle_vertex.push(0);
+    circle_vertex.push(0.678431372549);
     circle_vertex.push(1);
-    circle_vertex.push(1);
-    circle_vertex.push(1);
+    circle_vertex.push(0.18431372549);
 
   for ( var i = 0; i < 360; i++){
     circle_vertex.push(Math.cos(i));
     circle_vertex.push(Math.sin(i));
     circle_vertex.push(0);
+    circle_vertex.push(0.678431372549);
     circle_vertex.push(1);
-    circle_vertex.push(1);
-    circle_vertex.push(1);
+    circle_vertex.push(0.18431372549);
   }
   var CIRCLE_VERTEX= GL.createBuffer ();
   GL.bindBuffer(GL.ARRAY_BUFFER, CIRCLE_VERTEX);
@@ -141,49 +156,76 @@ gl_FragColor = vec4(color, 1.);\n\
     circle_faces.push((i+1)%360);
   }
 
-  var CIRLCE_FACES= GL.createBuffer ();
-  GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, CIRLCE_FACES);
+  var CIRCLE_FACES= GL.createBuffer ();
+  GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, CIRCLE_FACES);
   GL.bufferData(GL.ELEMENT_ARRAY_BUFFER,
                 new Uint16Array(circle_faces),
     GL.STATIC_DRAW);
 
-  /*======================= THE CIRCLE =========================== */
+  /*======================= THE COINS =========================== */
 
-  var circle_vertex = [];
-    circle_vertex.push(0);
-    circle_vertex.push(0);
-    circle_vertex.push(0);
-    circle_vertex.push(1);
-    circle_vertex.push(1);
-    circle_vertex.push(1);
-
-  for ( var i = 0; i < 360; i++){
-    circle_vertex.push(Math.cos(i));
-    circle_vertex.push(Math.sin(i));
-    circle_vertex.push(0);
-    circle_vertex.push(1);
-    circle_vertex.push(1);
-    circle_vertex.push(1);
+  var coin_vertex = new Array(10);
+  var coin_faces = new Array(10);
+  var COIN_FACES = new Array(10);
+  var COIN_VERTEX = new Array(10);
+  var c1 = new Array(10);
+  var c2 = new Array(10);
+  var c3 = new Array(10);
+  for ( var j = 0; j<9 ;j++){
+    if( j < 4){
+      c1[j]=1;
+      c2[j]=1;
+      c3[j]=1;
+    }
+    else if( j< 8){
+      c1[j]=0;
+      c2[j]=0;
+      c3[j]=0;
+    }
+    else{
+      c1[j]=1;
+      c2[j]=0;
+      c3[j]=1;
+    }
   }
-  var CIRCLE_VERTEX= GL.createBuffer ();
-  GL.bindBuffer(GL.ARRAY_BUFFER, CIRCLE_VERTEX);
-  GL.bufferData(GL.ARRAY_BUFFER,
-                new Float32Array(circle_vertex),
+  for (var j = 0; j < 9; j++){
+    coin_vertex[j] = [];
+    coin_faces[j] = [];
+    coin_vertex[j].push(0);
+    coin_vertex[j].push(0);
+    coin_vertex[j].push(0);
+    coin_vertex[j].push(c1[j]);
+    coin_vertex[j].push(c2[j]);
+    coin_vertex[j].push(c3[j]);
+
+    for ( var i = 0; i < 360; i++){
+      coin_vertex[j].push(Math.cos(i));
+      coin_vertex[j].push(Math.sin(i));
+      coin_vertex[j].push(0);
+      coin_vertex[j].push(c1[j]);
+      coin_vertex[j].push(c2[j]);
+      coin_vertex[j].push(c3[j]);
+    }
+    COIN_VERTEX[j] = GL.createBuffer ();
+    GL.bindBuffer(GL.ARRAY_BUFFER, COIN_VERTEX[j]);
+    GL.bufferData(GL.ARRAY_BUFFER,
+                new Float32Array(coin_vertex[j]),
     GL.STATIC_DRAW);
 
-  var circle_faces = [];
 
-  for ( var i=0; i<360; i++){
-    circle_faces.push(0);
-    circle_faces.push(i);
-    circle_faces.push((i+1)%360);
-  }
+    for ( var i=0; i<360; i++){
+      coin_faces[j].push(0);
+      coin_faces[j].push(i);
+      coin_faces[j].push((i+1)%360);
+    }
 
-  var CIRLCE_FACES= GL.createBuffer ();
-  GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, CIRLCE_FACES);
-  GL.bufferData(GL.ELEMENT_ARRAY_BUFFER,
-                new Uint16Array(circle_faces),
+    COIN_FACES[j] = GL.createBuffer ();
+    GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, COIN_FACES[j]);
+    GL.bufferData(GL.ELEMENT_ARRAY_BUFFER,
+                new Uint16Array(coin_faces[j]),
     GL.STATIC_DRAW);
+    }
+    
 
 
   /*======================== THE RECTANGLE ============================ */
@@ -273,6 +315,9 @@ gl_FragColor = vec4(color, 1.);\n\
   var CIRCLEMATRIX=LIBS.get_I4();
   var MOVEMATRIX_TETRA=LIBS.get_I4();
   var VIEWMATRIX=LIBS.get_I4();
+  var COINMATRIX = new Array(10);
+  for ( var i = 0;i < 9; i++)
+    COINMATRIX[i] = LIBS.get_I4();
 
   LIBS.translateZ(VIEWMATRIX, -6);
   var THETA=0,
@@ -297,6 +342,14 @@ gl_FragColor = vec4(color, 1.);\n\
     LIBS.set_I4(MOVEMATRIX2);
     LIBS.set_I4(MOVEMATRIX3);
     LIBS.set_I4(MOVEMATRIX4);
+
+    for ( var i = 0; i < 9; i++){
+      LIBS.set_I4(COINMATRIX[i]);
+      LIBS.scaleX(COINMATRIX[i], 0.1);
+      LIBS.scaleY(COINMATRIX[i], 0.1);
+      LIBS.translateX(COINMATRIX[i], positionx[i]);
+      LIBS.translateY(COINMATRIX[i], positiony[i]);
+    }
 
     LIBS.scaleX(MOVEMATRIX, 1.45);
     LIBS.scaleY(MOVEMATRIX, 0.1);
@@ -399,20 +452,30 @@ gl_FragColor = vec4(color, 1.);\n\
     GL.drawElements(GL.TRIANGLES, 2*3, GL.UNSIGNED_SHORT, 0);
 
 
-
+    /*=========================== DRAW STRIKER =======================*/
 
     GL.uniformMatrix4fv(_Mmatrix, false, CIRCLEMATRIX);
     GL.bindBuffer(GL.ARRAY_BUFFER, CIRCLE_VERTEX);
     GL.vertexAttribPointer(_position, 3, GL.FLOAT, false,4*(3+3),0) ;
     GL.vertexAttribPointer(_color, 3, GL.FLOAT, false,4*(3+3),3*4) ;
-    GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, CIRLCE_FACES);
+    GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, CIRCLE_FACES);
 
     GL.uniform1f(_greyscality, 1);
     GL.drawElements(GL.TRIANGLES, 360*3, GL.UNSIGNED_SHORT, 0);
 
+    /*=========================== DRAW COINS =========================*/
 
-   //GL.uniform1f(_greyscality, 0);
-   // GL.drawElements(GL.TRIANGLES, 3*2, GL.UNSIGNED_SHORT, 6*2);
+    for (var i = 0; i<9; i++){
+      GL.uniformMatrix4fv(_Mmatrix, false, COINMATRIX[i]);
+      GL.bindBuffer(GL.ARRAY_BUFFER, COIN_VERTEX[i]);
+      GL.vertexAttribPointer(_position, 3, GL.FLOAT, false,4*(3+3),0) ;
+      GL.vertexAttribPointer(_color, 3, GL.FLOAT, false,4*(3+3),3*4) ;
+      GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, COIN_FACES[i]);
+
+      GL.uniform1f(_greyscality, 1);
+      GL.drawElements(GL.TRIANGLES, 360*3, GL.UNSIGNED_SHORT, 0);
+    }
+
     GL.flush();
 
     window.requestAnimationFrame(animate);
