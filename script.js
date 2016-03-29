@@ -4,7 +4,7 @@ var cspeed = new Array(10);
 var done = new Array(10);
 var cinmotion = new Array(10);
 var ciTHETA = new Array(10);
-var inmotion = false,power = 3;
+var inmotion = false,power = 0.75;
 var strikerx = 0,strikery=-1.6;
 var mousex = 0,mousey=0;
 var iTHETA;
@@ -84,6 +84,14 @@ var main=function() {
     if(e.keyCode==39){
       strikerx +=0.1;
       strikerx = Math.min(1.4,strikerx);
+    }
+    if(e.keyCode==40){
+      power -= 0.05
+      power = Math.max(0.4,power);
+    }
+    if(e.keyCode==38){
+      power +=0.05;
+      power = Math.min(2,power);
     }
   }
   window.addEventListener("keyup", keypress, false);
@@ -304,7 +312,7 @@ gl_FragColor = vec4(color, 1.);\n\
     GL.STATIC_DRAW);
     }
     
-
+    /*==================== POWER ===========================*/
 
   /*======================== THE RECTANGLE ============================ */
   var rectangle_vertex=[
@@ -564,7 +572,7 @@ gl_FragColor = vec4(color, 1.);\n\
       LIBS.translateX(COINMATRIX[i], positionx[i]);
       LIBS.translateY(COINMATRIX[i], positiony[i]);
     }
-
+    console.log(power);
     LIBS.scaleX(MOVEMATRIX, 1.45);
     LIBS.scaleY(MOVEMATRIX, 0.1);
     LIBS.translateY(MOVEMATRIX,-1.6);
