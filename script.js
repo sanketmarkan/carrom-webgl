@@ -3,7 +3,7 @@ var positiony = new Array(10);
 var cspeed = new Array(10);
 var cinmotion = new Array(10);
 var ciTHETA = new Array(10);
-var inmotion = false,power = 0.75;
+var inmotion = false,power = 3;
 var strikerx = 0,strikery=-1.6;
 var mousex = 0,mousey=0;
 var iTHETA;
@@ -385,8 +385,17 @@ gl_FragColor = vec4(color, 1.);\n\
 
   if ( inmotion ){
     speed -= 0.01;
+    speed = Math.max(0,speed);
     strikerx += (speed * Math.cos(iTHETA))/10;
     strikery += (speed * Math.sin(iTHETA))/10;
+    if(strikerx >= 1.9 || strikerx <= -1.9){
+      strikerx -= (speed * Math.cos(iTHETA))/10;
+      iTHETA = Math.PI - iTHETA;
+    }
+    if(strikery >= 1.9 || strikery <= -1.9){
+      strikery -= (speed * Math.sin(iTHETA))/10;
+      iTHETA = -1 *iTHETA;
+    }
     if(speed <= 0){
       speed = 0;
       inmotion = false;
@@ -398,8 +407,17 @@ gl_FragColor = vec4(color, 1.);\n\
   for ( var i = 0; i< 9 ;i++)
     if(cinmotion[i]){
       cspeed[i] -= 0.01;
+      cspeed[i] = Math.max(0,cspeed[i]);
       positionx[i] += (cspeed[i] * Math.cos(ciTHETA[i]))/10;
       positiony[i] += (cspeed[i] * Math.sin(ciTHETA[i]))/10;
+      if(positionx[i] >= 1.9 || positionx[i] <= -1.9){
+        positionx[i] -= (cspeed[i] * Math.cos(ciTHETA[i]))/10;
+        ciTHETA[i] = Math.PI - ciTHETA[i];
+      }
+      if(positiony[i] >= 1.9 || positiony[i] <= -1.9){
+        positiony[i] -= (cspeed[i] * Math.sin(ciTHETA[i]))/10;
+        ciTHETA[i] = -1 * ciTHETA[i];
+      }
       if(speed <= 0){
         cspeed[i] = 0;
         cinmotion[i] = false;
