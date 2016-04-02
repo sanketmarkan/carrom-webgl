@@ -548,7 +548,7 @@ gl_FragColor = vec4(color, 1.);\n\
         positiony[i] -= (cspeed[i] * Math.sin(ciTHETA[i]))/10;
         ciTHETA[i] = -1 * ciTHETA[i];
       }
-      if(speed <= 0){
+      if(cspeed[i] <= 0){
         cspeed[i] = 0;
         cinmotion[i] = false;
         ciTHETA[i] = 0;
